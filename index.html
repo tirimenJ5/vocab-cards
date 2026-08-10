@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>語学フラッシュカード（オフライン版）</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: system-ui, -apple-system, "Hiragino Kaku Gothic ProN", sans-serif;
+        margin: 0;
+        padding: 14px;
+        padding-bottom: calc(14px + env(safe-area-inset-bottom));
+        padding-top: calc(14px + env(safe-area-inset-top));
+        background: #f8fafc;
+        color: #1e293b;
+        max-width: 560px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      h1 {
+        font-size: 16px;
+        margin: 0 0 12px;
+        text-align: center;
+        color: #475569;
+      }
+      .note {
+        font-size: 11px;
+        color: #94a3b8;
+        text-align: center;
+        margin-bottom: 14px;
+      }
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      select, button {
+        font: inherit;
+        border-radius: 10px;
+        border: 1px solid #cbd5e1;
+        background: #fff;
+        padding: 9px 12px;
+        cursor: pointer;
+        min-height: 44px;
+      }
+      select {
+        flex: 1;
+        min-width: 0;
+      }
+      label.chk {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: #475569;
+        width: 100%;
+      }
+      label.chk input {
+        width: 20px;
+        height: 20px;
+      }
+      .summary {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+        justify-content: center;
+      }
+      .summary .chip {
+        font-size: 11px;
+        background: #eef2ff;
+        color: #3730a3;
+        border-radius: 999px;
+        padding: 3px 9px;
+      }
+      .progress {
+        font-size: 13px;
+        color: #64748b;
+        width: 100%;
+        text-align: center;
+      }
+      .stage {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+      }
+      .card {
+        width: 100%;
+        min-height: 220px;
+        border-radius: 18px;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
+        padding: 24px 18px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 12px;
+        text-align: center;
+      }
+      .tag {
+        display: inline-block;
+        align-self: center;
+        font-size: 12px;
+        color: #4f46e5;
+        background: #eef2ff;
+        border-radius: 999px;
+        padding: 3px 10px;
+        margin-bottom: 4px;
+      }
+      .word-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+      .word {
+        font-size: 26px;
+        font-weight: 700;
+      }
+      .speak-btn {
+        border: 1px solid #cbd5e1;
+        background: #fff;
+        border-radius: 999px;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 17px;
+        line-height: 1;
+        flex: none;
+      }
+      .ex-row {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .ex-row .speak-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 14px;
+      }
+      .reading {
+        font-size: 13px;
+        color: #64748b;
+      }
+      .back-section {
+        text-align: left;
+        margin-top: 4px;
+      }
+      .back-section h4 {
+        margin: 8px 0 2px;
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #94a3b8;
+      }
+      .back-section p {
+        margin: 0;
+        font-size: 15px;
+        line-height: 1.5;
+      }
+      .source {
+        font-size: 12px;
+        color: #94a3b8;
+        margin-top: 8px;
+      }
+      .flip-btn {
+        width: 100%;
+        background: #4f46e5;
+        border-color: #4f46e5;
+        color: #fff;
+        font-weight: 600;
+      }
+      .actions {
+        display: flex;
+        gap: 10px;
+        width: 100%;
+      }
+      .actions button {
+        flex: 1;
+        font-size: 15px;
+      }
+      .btn-again {
+        border-color: #f87171;
+        color: #dc2626;
+      }
+      .btn-good {
+        border-color: #34d399;
+        background: #10b981;
+        color: #fff;
+      }
+      .empty, .done {
+        text-align: center;
+        color: #64748b;
+        padding: 30px 0;
+      }
+      .stats {
+        font-size: 14px;
+        color: #475569;
+      }
+      .reset-link {
+        display: block;
+        text-align: center;
+        font-size: 11px;
+        color: #94a3b8;
+        margin-top: 20px;
+        text-decoration: underline;
+        background: none;
+        border: none;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>語学フラッシュカード（オフライン版）</h1>
+    <div class="note">この端末の中だけで動作します。単語を追加した際はファイルを作り直してお送りします。</div>
+
+    <div class="toolbar">
+      <select id="langSelect"></select>
+      <label class="chk"><input type="checkbox" id="includeMastered" /> 習得済みも含める</label>
+      <button id="restartBtn" style="width:100%">シャッフルして最初から</button>
+    </div>
+    <div class="summary" id="summary"></div>
+    <div class="progress" id="progress"></div>
+    <div class="stage" id="stage"></div>
+    <button class="reset-link" id="resetProgressBtn">この端末の学習記録をリセットする</button>
+
+    <script>
+      // ---- Embedded deck data (snapshot). Progress is stored locally below. ----
+      const DATA = [
+        {"id":"es-a-pecho-descubierto","language":"スペイン語","word":"a pecho descubierto","partOfSpeech":"フレーズ","meaning":"胸襟を開いて、包み隠さず(慣用表現)","example":"Es una declaración a pecho descubierto.","exampleMeaning":"これは胸襟を開いた告白だ。","source":"Mondosonoro: Guille Galván インタビュー","proficiency":"未着手"},
+        {"id":"es-desprenderse-de","language":"スペイン語","word":"desprenderse de algo","partOfSpeech":"動詞","meaning":"(何か)を手放す、捨てる","example":"debía desprenderme de casi todo y volver al origen.","exampleMeaning":"ほとんど全てを手放し、原点に戻らなければならなかった。","source":"Mondosonoro: Guille Galván インタビュー","proficiency":"未着手"},
+        {"id":"es-destacado","language":"スペイン語","word":"destacado/a","partOfSpeech":"形容詞","meaning":"際立った、優れた、著名な","example":"uno de los escritores de canciones en lengua castellana más destacados de su generación.","exampleMeaning":"彼の世代で最も著名なスペイン語の作詞家の一人。","source":"Mondosonoro: Guille Galván インタビュー","proficiency":"未着手"},
+        {"id":"es-en-solitario","language":"スペイン語","word":"en solitario","partOfSpeech":"フレーズ","meaning":"ソロで、単独で","example":"su álbum debut en solitario.","exampleMeaning":"彼のソロデビューアルバム。","source":"Mondosonoro: Guille Galván インタビュー","proficiency":"学習中"},
+        {"id":"es-estrenar","language":"スペイン語","word":"estrenar","partOfSpeech":"動詞","meaning":"(作品などを)初めて発表する、リリースする","example":"Guille Galván estrena \"En qué momento dudé de ti\".","exampleMeaning":"ギジェ・ガルバンは「En qué momento dudé de ti」をリリースする。","source":"Mondosonoro: Guille Galván インタビュー","proficiency":"未着手"},
+        {"id":"es-hacer-giras","language":"スペイン語","word":"hacer giras","partOfSpeech":"動詞","meaning":"ツアーをする、巡業する","example":"haciendo giras por buena parte del mundo.","exampleMeaning":"世界の多くの場所をツアーして回りながら。","source":"Mondosonoro: Guille Galván インタビュー","proficiency":"未着手"},
+        {"id":"es-poner-en-valor","language":"スペイン語","word":"poner en valor","partOfSpeech":"フレーズ","meaning":"〜の価値を認める、評価する","example":"tratas de poner en valor reconociéndole todo lo que ha hecho.","exampleMeaning":"彼がしてきたことすべてを認めながら、その価値を伝えようとする。","source":"Mondosonoro: Guille Galván インタビュー","proficiency":"未着手"},
+        {"id":"es-primer-adelanto","language":"スペイン語","word":"primer adelanto","partOfSpeech":"フレーズ","meaning":"(アルバムなどの)先行シングル、最初の先行公開曲","example":"primer adelanto de su álbum debut en solitario.","exampleMeaning":"彼のソロデビューアルバムからの最初の先行シングル。","source":"Mondosonoro: Guille Galván インタビュー","proficiency":"未着手"},
+        {"id":"es-rodeado-de","language":"スペイン語","word":"rodeado de","partOfSpeech":"フレーズ","meaning":"〜に囲まれて","example":"rodeado de sus instrumentos, objetos personales, recuerdos y fotografías.","exampleMeaning":"彼の楽器や私物、思い出の品、写真に囲まれて。","source":"Mondosonoro: Guille Galván インタビュー","proficiency":"未着手"},
+        {"id":"es-volver-al-origen","language":"スペイン語","word":"volver al origen","partOfSpeech":"フレーズ","meaning":"原点に戻る","example":"volver al origen.","exampleMeaning":"原点に戻る。","source":"Mondosonoro: Guille Galván インタビュー","proficiency":"未着手"},
+        {"id":"fr-aspiration","language":"フランス語","word":"aspiration","partOfSpeech":"名詞","meaning":"願望、憧れ、文字通りには「吸うこと・吸引」","example":"Son aspiration est de devenir musicienne professionnelle.","exampleMeaning":"彼女の願望はプロの音楽家になることだ。","source":"Zaho de Sagazan『Aspiration』の歌詞に登場する語より(自作例文)","proficiency":"未着手"},
+        {"id":"fr-dernier","language":"フランス語","word":"dernier / dernière","partOfSpeech":"形容詞","meaning":"最後の","example":"C'est la dernière fois que je fais cette erreur.","exampleMeaning":"この間違いをするのはこれが最後だ。","source":"Zaho de Sagazan『Aspiration』の歌詞に登場する語より(自作例文)","proficiency":"未着手"},
+        {"id":"fr-ne-jamais","language":"フランス語","word":"ne ... jamais","partOfSpeech":"フレーズ","meaning":"決して〜ない(否定表現)","example":"Elle ne s'arrête jamais de travailler.","exampleMeaning":"彼女は決して仕事の手を止めない。","source":"Zaho de Sagazan『Aspiration』の歌詞に登場する構文より(自作例文)","proficiency":"未着手"},
+        {"id":"fr-spirale","language":"フランス語","word":"spirale","partOfSpeech":"名詞","meaning":"螺旋、(比喩的に)悪循環","example":"Il est tombé dans une spirale de stress au travail.","exampleMeaning":"彼は仕事のストレスの悪循環に陥った。","source":"Zaho de Sagazan『Aspiration』の歌詞に登場する語より(自作例文)","proficiency":"未着手"},
+        {"id":"fr-tourner-la-tete","language":"フランス語","word":"tourner la tête à quelqu'un","partOfSpeech":"フレーズ","meaning":"(人)をくらくらさせる、夢中にさせる(魅了する)","example":"Ce parfum me tourne la tête.","exampleMeaning":"この香水は私をくらくらさせる(魅了する)。","source":"Zaho de Sagazan『Aspiration』の歌詞に登場する表現より(自作例文)","proficiency":"未着手"},
+        {"id":"tr-acmak","language":"トルコ語","word":"açmak","partOfSpeech":"動詞","meaning":"開ける、開く","example":"Pencereyi açar mısın?","exampleMeaning":"窓を開けてくれますか？","source":"『しっかり学ぶトルコ語』巻末語彙集より(基本語・自作例文)","proficiency":"未着手"},
+        {"id":"tr-ad","language":"トルコ語","word":"ad","partOfSpeech":"名詞","meaning":"名前","example":"Senin adın ne?","exampleMeaning":"あなたの名前は何ですか？","source":"『しっかり学ぶトルコ語』巻末語彙集より(基本語・自作例文)","proficiency":"未着手"},
+        {"id":"tr-adam","language":"トルコ語","word":"adam","partOfSpeech":"名詞","meaning":"男の人、人間","example":"O adam çok naziktir.","exampleMeaning":"あの男の人はとても親切です。","source":"『しっかり学ぶトルコ語』巻末語彙集より(基本語・自作例文)","proficiency":"学習中"},
+        {"id":"tr-almak","language":"トルコ語","word":"almak","partOfSpeech":"動詞","meaning":"取る、受け取る、買う","example":"Ben bir kitap alıyorum.","exampleMeaning":"私は本を一冊買います。","source":"『しっかり学ぶトルコ語』巻末語彙集より(基本語・自作例文)","proficiency":"未着手"},
+        {"id":"tr-alt","language":"トルコ語","word":"alt","partOfSpeech":"名詞","meaning":"下","example":"Kitap masanın altında.","exampleMeaning":"本は机の下にあります。","source":"『しっかり学ぶトルコ語』巻末語彙集より(基本語・自作例文)","proficiency":"未着手"},
+        {"id":"tr-ama","language":"トルコ語","word":"ama","partOfSpeech":"その他","meaning":"しかし","example":"Hava güzel ama soğuk.","exampleMeaning":"天気はいいけど寒い。","source":"『しっかり学ぶトルコ語』巻末語彙集より(基本語・自作例文)","proficiency":"未着手"},
+        {"id":"tr-an","language":"トルコ語","word":"an","partOfSpeech":"名詞","meaning":"瞬間","example":"Bu an çok önemli.","exampleMeaning":"この瞬間はとても大切です。","source":"『しっかり学ぶトルコ語』巻末語彙集より(基本語・自作例文)","proficiency":"未着手"},
+        {"id":"tr-ancak","language":"トルコ語","word":"ancak","partOfSpeech":"その他","meaning":"~だけ、だが","example":"Bunu ancak sen yapabilirsin.","exampleMeaning":"これはあなたにしかできません。","source":"『しっかり学ぶトルコ語』巻末語彙集より(基本語・自作例文)","proficiency":"未着手"},
+        {"id":"tr-anlamak","language":"トルコ語","word":"anlamak","partOfSpeech":"動詞","meaning":"理解する、わかる","example":"Türkçeyi biraz anlıyorum.","exampleMeaning":"トルコ語は少しわかります。","source":"『しっかり学ぶトルコ語』巻末語彙集より(基本語・自作例文)","proficiency":"未着手"},
+        {"id":"tr-anlatmak","language":"トルコ語","word":"anlatmak","partOfSpeech":"動詞","meaning":"語る、説明する","example":"Bana hikayeni anlat.","exampleMeaning":"私にあなたの話を聞かせて。","source":"『しっかり学ぶトルコ語』巻末語彙集より(基本語・自作例文)","proficiency":"未着手"},
+        {"id":"tr-anne","language":"トルコ語","word":"anne","partOfSpeech":"名詞","meaning":"母、お母さん","example":"Annem her sabah kahve içer.","exampleMeaning":"私の母は毎朝コーヒーを飲みます。","source":"『しっかり学ぶトルコ語』巻末語彙集より(基本語・自作例文)","proficiency":"未着手"},
+        {"id":"tr-ara","language":"トルコ語","word":"ara","partOfSpeech":"名詞","meaning":"間、休憩","example":"Kısa bir ara verelim.","exampleMeaning":"少し休憩しよう。","source":"『しっかり学ぶトルコ語』巻末語彙集より(基本語・自作例文)","proficiency":"未着手"},
+        {"id":"tr-artik","language":"トルコ語","word":"artık","partOfSpeech":"副詞","meaning":"もう","example":"Artık geç oldu, eve gidelim.","exampleMeaning":"もう遅くなったから、家に帰ろう。","source":"『しっかり学ぶトルコ語』巻末語彙集より(基本語・自作例文)","proficiency":"未着手"},
+        {"id":"tr-atmak","language":"トルコ語","word":"atmak","partOfSpeech":"動詞","meaning":"投げる、捨てる","example":"Topu bana at.","exampleMeaning":"ボールを私に投げて。","source":"『しっかり学ぶトルコ語』巻末語彙集より(基本語・自作例文)","proficiency":"未着手"},
+        {"id":"tr-ay","language":"トルコ語","word":"ay","partOfSpeech":"名詞","meaning":"月(暦・天体)","example":"Bu ay çok yoğunum.","exampleMeaning":"今月はとても忙しいです。","source":"『しっかり学ぶトルコ語』巻末語彙集より(基本語・自作例文)","proficiency":"未着手"},
+        {"id":"tr-ayni","language":"トルコ語","word":"aynı","partOfSpeech":"形容詞","meaning":"同じ","example":"Biz aynı okula gidiyoruz.","exampleMeaning":"私たちは同じ学校に通っています。","source":"『しっかり学ぶトルコ語』巻末語彙集より(基本語・自作例文)","proficiency":"未着手"},
+        {"id":"tr-az","language":"トルコ語","word":"az","partOfSpeech":"形容詞","meaning":"少ない","example":"Bugün az yemek yedim.","exampleMeaning":"今日は少ししか食べませんでした。","source":"『しっかり学ぶトルコ語』巻末語彙集より(基本語・自作例文)","proficiency":"未着手"},
+        {"id":"tr-baba","language":"トルコ語","word":"baba","partOfSpeech":"名詞","meaning":"父、お父さん","example":"Babam öğretmen.","exampleMeaning":"私の父は教師です。","source":"『しっかり学ぶトルコ語』巻末語彙集より(基本語・自作例文)","proficiency":"学習中"}
+      ];
+
+      const PROF_LEVELS = ["未着手", "学習中", "なじんできた", "習得"];
+      const LANGS = ["スペイン語", "フランス語", "トルコ語"];
+      const LANG_CODES = { スペイン語: "es-ES", フランス語: "fr-FR", トルコ語: "tr-TR" };
+      const STORAGE_KEY = "mc-vocab-offline-progress-v1";
+      const canSpeak = "speechSynthesis" in window;
+
+      function loadProgress() {
+        try {
+          return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+        } catch (e) {
+          return {};
+        }
+      }
+      function saveProgress(p) {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
+        } catch (e) {
+          console.error("could not save progress", e);
+        }
+      }
+      let progress = loadProgress();
+
+      // Merge embedded baseline proficiency with any locally-saved progress.
+      const allItems = DATA.map((it) => ({ ...it, proficiency: progress[it.id] || it.proficiency }));
+
+      function speak(text, language) {
+        if (!canSpeak || !text) return;
+        try {
+          window.speechSynthesis.cancel();
+          const u = new SpeechSynthesisUtterance(text);
+          u.lang = LANG_CODES[language] || "";
+          window.speechSynthesis.speak(u);
+        } catch (e) {
+          console.error("speak failed", e);
+        }
+      }
+
+      const langSelect = document.getElementById("langSelect");
+      const includeMastered = document.getElementById("includeMastered");
+      const restartBtn = document.getElementById("restartBtn");
+      const stage = document.getElementById("stage");
+      const progressEl = document.getElementById("progress");
+      const summaryEl = document.getElementById("summary");
+      const resetProgressBtn = document.getElementById("resetProgressBtn");
+
+      langSelect.innerHTML =
+        '<option value="__all">すべての言語</option>' + LANGS.map((l) => `<option value="${l}">${l}</option>`).join("");
+
+      let queue = [];
+      let pos = 0;
+      let flipped = false;
+      let stats = { good: 0, again: 0 };
+
+      function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+      }
+
+      function shuffle(arr) {
+        const a = arr.slice();
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      }
+
+      function renderSummary() {
+        const lang = langSelect.value;
+        const pool = allItems.filter((it) => (lang === "__all" ? true : it.language === lang));
+        const counts = { 未着手: 0, 学習中: 0, なじんできた: 0, 習得: 0 };
+        pool.forEach((it) => counts[it.proficiency]++);
+        summaryEl.innerHTML = PROF_LEVELS.map((l) => `<span class="chip">${l}: ${counts[l]}</span>`).join("");
+      }
+
+      function buildQueue() {
+        const lang = langSelect.value;
+        let pool = allItems.filter((it) => (lang === "__all" ? true : it.language === lang));
+        if (!includeMastered.checked) pool = pool.filter((it) => it.proficiency !== "習得");
+        queue = shuffle(pool);
+        pos = 0;
+        flipped = false;
+        stats = { good: 0, again: 0 };
+        renderSummary();
+      }
+
+      function renderProgress() {
+        progressEl.textContent = queue.length ? `${Math.min(pos + 1, queue.length)} / ${queue.length}枚` : "";
+      }
+
+      function speakBtnHtml(id, size) {
+        return canSpeak ? `<button class="speak-btn" id="${id}" title="発音を聞く" style="width:${size}px;height:${size}px;">🔊</button>` : "";
+      }
+
+      function renderCard() {
+        renderProgress();
+        if (!queue.length) {
+          stage.innerHTML = '<div class="empty">このデッキにはカードがありません。</div>';
+          return;
+        }
+        if (pos >= queue.length) {
+          stage.innerHTML =
+            '<div class="done"><div style="font-size:19px;font-weight:700;margin-bottom:6px;">セッション終了！ 🎉</div>' +
+            `<div class="stats">できた: ${stats.good} 件 / もう少し: ${stats.again} 件</div></div>`;
+          return;
+        }
+        const it = queue[pos];
+        if (!flipped) {
+          stage.innerHTML =
+            '<div class="card">' +
+            (it.partOfSpeech ? `<span class="tag">${it.partOfSpeech}</span>` : "") +
+            `<div class="word-row"><div class="word">${escapeHtml(it.word || "")}</div>${speakBtnHtml("speakWordBtn", 36)}</div>` +
+            (it.reading ? `<div class="reading">${escapeHtml(it.reading)}</div>` : "") +
+            "</div>" +
+            '<button class="flip-btn" id="flipBtn">意味を見る</button>';
+          const sb = document.getElementById("speakWordBtn");
+          if (sb) sb.onclick = () => speak(it.word, it.language);
+          document.getElementById("flipBtn").onclick = () => {
+            flipped = true;
+            renderCard();
+          };
+        } else {
+          stage.innerHTML =
+            '<div class="card">' +
+            `<div class="word-row"><div class="word" style="font-size:20px;">${escapeHtml(it.word || "")}</div>${speakBtnHtml("speakWordBtn", 32)}</div>` +
+            '<div class="back-section"><h4>意味</h4><p>' +
+            escapeHtml(it.meaning || "―") +
+            "</p></div>" +
+            (it.example
+              ? '<div class="back-section"><h4>例文</h4><p>' +
+                `<span class="ex-row">${escapeHtml(it.example)}${speakBtnHtml("speakExampleBtn", 26)}</span>` +
+                (it.exampleMeaning ? "<br><span style='color:#64748b;font-size:13px;'>" + escapeHtml(it.exampleMeaning) + "</span>" : "") +
+                "</p></div>"
+              : "") +
+            (it.source ? `<div class="source">出典: ${escapeHtml(it.source)}</div>` : "") +
+            "</div>" +
+            '<div class="actions">' +
+            '<button class="btn-again" id="againBtn">もう少し</button>' +
+            '<button class="btn-good" id="goodBtn">覚えた！</button>' +
+            "</div>";
+          const sb = document.getElementById("speakWordBtn");
+          if (sb) sb.onclick = () => speak(it.word, it.language);
+          const esb = document.getElementById("speakExampleBtn");
+          if (esb) esb.onclick = () => speak(it.example, it.language);
+          document.getElementById("againBtn").onclick = () => grade(it, false);
+          document.getElementById("goodBtn").onclick = () => grade(it, true);
+        }
+      }
+
+      function grade(item, correct) {
+        const idx = PROF_LEVELS.indexOf(item.proficiency);
+        const nextIdx = correct ? Math.min(PROF_LEVELS.length - 1, idx + 1) : Math.max(0, idx - 1);
+        const nextProf = PROF_LEVELS[nextIdx];
+        if (correct) stats.good++;
+        else stats.again++;
+        item.proficiency = nextProf;
+        const localIt = allItems.find((r) => r.id === item.id);
+        if (localIt) localIt.proficiency = nextProf;
+        progress[item.id] = nextProf;
+        saveProgress(progress);
+        pos++;
+        flipped = false;
+        renderCard();
+        renderSummary();
+      }
+
+      function start() {
+        buildQueue();
+        renderCard();
+      }
+
+      langSelect.onchange = start;
+      includeMastered.onchange = start;
+      restartBtn.onclick = start;
+      resetProgressBtn.onclick = () => {
+        if (!confirm("この端末に保存した習熟度の記録をすべてリセットします。よろしいですか？")) return;
+        progress = {};
+        saveProgress(progress);
+        allItems.forEach((it) => {
+          const base = DATA.find((d) => d.id === it.id);
+          if (base) it.proficiency = base.proficiency;
+        });
+        start();
+      };
+
+      start();
+    </script>
+  </body>
+</html>
